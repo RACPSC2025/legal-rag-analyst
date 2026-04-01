@@ -140,24 +140,20 @@ Durante las pruebas técnicas, se identificaron los siguientes patrones de compo
 
 **Aquí te explico el sentido del prompt y por qué te dio ese resultado "extraño":**
 
-### 1. El Sentido del Prompt (La Intención)
-    El objetivo de ese prompt es realizar un Análisis Sistémico y Estructural.
-    * No busca "responder una pregunta" sobre un artículo.
-    * Busca extraer la arquitectura del documento: ¿Quién manda? ¿Quién obedece? ¿Qué castigos hay? ¿Qué palabras no están claras?
-    * Está diseñado para leer un contrato completo o una ley entera y sacar un resumen ejecutivo de riesgos para un gerente o un
-     abogado senior.
+# 1. El Sentido del Prompt (La Intención)
+El objetivo de ese prompt es realizar un Análisis Sistémico y Estructural.
+* No busca "responder una pregunta" sobre un artículo.
+* Busca extraer la arquitectura del documento: ¿Quién manda? ¿Quién obedece? ¿Qué castigos hay? ¿Qué palabras no están claras?
+* Está diseñado para leer un contrato completo o una ley entera y sacar un resumen ejecutivo de riesgos para un gerente o un abogado senior.
 
-### 2. ¿Por qué te dio ese resultado (El Problema)?
-    Te dio información de taxis, teletrabajo y cesantías cuando preguntaste por el Artículo 2.2.4.7.4 (que es sobre Calidad en Riesgos Laborales) por tres razones técnicas:
+# 2. ¿Por qué te dio ese resultado (El Problema)?
+Te dio información de taxis, teletrabajo y cesantías cuando preguntaste por el Artículo 2.2.4.7.4 (que es sobre Calidad en Riesgos Laborales) por tres razones técnicas:
 
-    * A. El "Efecto Resumen de Todo el PDF": En el modo "Directo", le enviamos al modelo un contexto muy grande del PDF. El prompt le pide: "Analiza ÚNICAMENTE el texto y la estructura proporcionados". El modelo, al ver que el prompt es tan "pesado" y ambicioso, ignora tu pregunta específica sobre el artículo y decide hacerle la "autopsia" a todo el PDF que tiene en memoria (el Decreto 1072). Por eso ves temas de taxis y sindicatos; son otros artículos del mismo libro.
+* A. El "Efecto Resumen de Todo el PDF": En el modo "Directo", le enviamos al modelo un contexto muy grande del PDF. El prompt le pide: "Analiza ÚNICAMENTE el texto y la estructura proporcionados". El modelo, al ver que el prompt es tan "pesado" y ambicioso, ignora tu pregunta específica sobre el artículo y decide hacerle la "autopsia" a todo el PDF que tiene en memoria (el Decreto 1072). Por eso ves temas de taxis y sindicatos; son otros artículos del mismo libro.
     
-    * B. Jerarquía de Instrucciones: En el mundo de los prompts, las instrucciones de formato (JSON) y estilo (Análisis Profundo) a
-    veces "aplastan" la instrucción de contenido (la pregunta del usuario). El modelo se concentró tanto en llenar los campos del
-    JSON que rellenó los datos con lo más relevante que encontró en todo el documento, no solo en tu artículo.
+* B. Jerarquía de Instrucciones: En el mundo de los prompts, las instrucciones de formato (JSON) y estilo (Análisis Profundo) a veces "aplastan" la instrucción de contenido (la pregunta del usuario). El modelo se concentró tanto en llenar los campos del JSON que rellenó los datos con lo más relevante que encontró en todo el documento, no solo en tu artículo.
     
-    * C. Ambigüedad de "Análisis Crítico": El prompt pide buscar lo "no evidente". El modelo interpreta esto como una licencia para
-    buscar en todo el conocimiento que le pasamos, tratando de ser "inteligente" en lugar de ser "preciso".
+* C. Ambigüedad de "Análisis Crítico": El prompt pide buscar lo "no evidente". El modelo interpreta esto como una licencia para buscar en todo el conocimiento que le pasamos, tratando de ser "inteligente" en lugar de ser "preciso".
 
-### **Nota Legal:** Este sistema es una herramienta de apoyo y no sustituye el criterio de un profesional del derecho. Desarrollado bajo los principios de precisión y transparencia informativa.
+# **Nota Legal:** Este sistema es una herramienta de apoyo y no sustituye el criterio de un profesional del derecho. Desarrollado bajo los principios de precisión y transparencia informativa.
 ---
