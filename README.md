@@ -155,5 +155,6 @@ Te dio información de taxis, teletrabajo y cesantías cuando preguntaste por el
     
 * C. Ambigüedad de "Análisis Crítico": El prompt pide buscar lo "no evidente". El modelo interpreta esto como una licencia para buscar en todo el conocimiento que le pasamos, tratando de ser "inteligente" en lugar de ser "preciso".
 
-# **Nota Legal:** Este sistema es una herramienta de apoyo y no sustituye el criterio de un profesional del derecho. Desarrollado bajo los principios de precisión y transparencia informativa.
+# *Nota Legal:* 
+Este sistema es una herramienta de apoyo y no sustituye el criterio de un profesional del derecho. Desarrollado bajo los principios de precisión y transparencia informativa.
 ---
