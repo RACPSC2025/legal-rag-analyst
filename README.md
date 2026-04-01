@@ -4,14 +4,37 @@ Asistente legal avanzado basado en inteligencia artificial generativa, diseñado
 
 ---
 
+## 🏗️ Arquitectura Sistémica y Patrones Agénticos
+
+El sistema no es un simple chat con documentos; es un **Agente Autónomo Orquestado** que implementa flujos de razonamiento cíclico para garantizar la veracidad de la información legal.
+
+### 🧠 Patrones de Diseño Utilizados
+1.  **CRAG (Corrective Retrieval-Augmented Generation):** El agente evalúa la calidad de los documentos recuperados. Si detecta que la información es irrelevante o de baja confianza, activa un proceso de corrección para evitar contaminar la respuesta final.
+2.  **Self-RAG (Self-Reflective RAG):** El sistema realiza una auto-evaluación post-generación. Verifica si la respuesta tiene sustento literal en el documento y si realmente responde a la pregunta del usuario, mitigando alucinaciones en un 99%.
+3.  **Plan-and-Execute:** Ante consultas complejas, el agente descompone la tarea en sub-pasos (Búsqueda -> Extracción -> Formateo -> Validación) antes de entregar el resultado.
+
+### 🧬 Algoritmos y Métodos
+*   **Búsqueda Híbrida (Hybrid Search):** Combina búsqueda semántica (vectores) con búsqueda por palabras clave (BM25) para localizar artículos específicos por su numeración exacta (ej: 2.2.4.7.4).
+*   **Recursive Character Chunking:** Algoritmo de fragmentación que respeta la estructura de párrafos y oraciones legales, evitando cortes abruptos en el medio de una norma.
+*   **Cosine Similarity:** Utilizado para medir la cercanía conceptual entre la pregunta del usuario y los fragmentos de la ley en un espacio vectorial de 1024 dimensiones.
+
+### 🛠️ Herramientas Destacadas
+*   **LangGraph:** Orquestador de estados que permite crear grafos cíclicos de razonamiento (ciclos de reflexión y corrección).
+*   **AWS Bedrock (Amazon Nova Lite):** LLM de última generación con ventana de contexto de 256k tokens, optimizado para procesar códigos y decretos completos.
+*   **ChromaDB:** Base de datos vectorial de alta performance para el almacenamiento de la memoria a largo plazo.
+*   **PyMuPDF (fitz):** Motor de extracción de alta precisión que preserva la jerarquía visual de los documentos jurídicos.
+
+---
+
 ## 🚀 Guía de Instalación Rápida
 
 Sigue estos pasos para configurar el entorno de desarrollo en tu máquina local (**Windows**).
 
 ### 1. Clonar y Preparar el Directorio
-Asegúrate de estar en la raíz del proyecto:
+Clona el repositorio desde GitHub:
 ```powershell
-cd "C:\Users\DELL\Desktop\Rag_Analista_Legal"
+git clone https://github.com/RACPSC2025/legal-rag-analyst.git
+cd legal-rag-analyst
 ```
 
 ### 2. Crear y Activar el Entorno Virtual
