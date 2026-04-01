@@ -1,0 +1,27 @@
+# Core Frameworks
+streamlit
+langchain
+langchain-community
+langchain-core
+langgraph
+python-dotenv
+
+# AWS Bedrock & Integration
+boto3
+langchain-aws
+
+# Vector Database
+langchain-chroma
+chromadb
+
+# PDF Processing & Ingestion
+pymupdf
+pypdf
+llama-parse
+llama-index
+
+# Utilities
+pydantic
+pydantic-settings
+typing-extensions
+transformers

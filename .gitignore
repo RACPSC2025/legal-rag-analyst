@@ -1,0 +1,61 @@
+# --- Entorno Virtual ---
+venv/
+ENV/
+env/
+.env
+.venv
+bin/
+lib/
+share/
+Include/
+Scripts/
+pyvenv.cfg
+
+# --- Carpetas de Datos y Almacenamiento (ChromaDB) ---
+storage/
+data/storage/
+data/processed/
+*.sqlite3
+*.db
+
+# --- Archivos Temporales de Aplicación ---
+session_pdfs/
+temp_uploads/
+logs/
+*.log
+
+# --- Guías y Skills (Solicitado por el usuario) ---
+agent_skills/
+
+# --- Python / Bytecode ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- Streamlit / Configuración local ---
+.streamlit/
+
+# --- Editores e IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
