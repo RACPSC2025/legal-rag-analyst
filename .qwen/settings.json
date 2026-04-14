@@ -4,7 +4,8 @@
       "mcp__filesystem__create_directory",
       "mcp__filesystem__write_file",
       "Bash(copy *)",
-      "Bash(mkdir *)"
+      "Bash(mkdir *)",
+      "Bash(move *)"
     ]
   },
   "$version": 3
