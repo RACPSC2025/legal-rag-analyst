@@ -5,7 +5,8 @@
       "mcp__filesystem__write_file",
       "Bash(copy *)",
       "Bash(mkdir *)",
-      "Bash(move *)"
+      "Bash(move *)",
+      "Bash(rmdir *)"
     ]
   },
   "$version": 3
