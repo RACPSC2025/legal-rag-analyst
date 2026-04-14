@@ -6,7 +6,9 @@
       "Bash(copy *)",
       "Bash(mkdir *)",
       "Bash(move *)",
-      "Bash(rmdir *)"
+      "Bash(rmdir *)",
+      "Bash(.\\venv\\scripts\\pip *)",
+      "Bash(.\\venv\\scripts\\python *)"
     ]
   },
   "$version": 3

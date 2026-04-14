@@ -8,9 +8,22 @@ import fitz
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from src.config import settings
-from src.services.pdf_direct_service import get_large_context_llm, _clean_text_basic
+from src.services.pdf_direct_service import get_large_context_llm
 
 logger = logging.getLogger(__name__)
+
+
+def _clean_text_basic(text: str) -> str:
+    """Limpieza básica de ruidos de encabezados/pies de página del Decreto 1072."""
+    if not text:
+        return ""
+    text = re.sub(r"Departamento Administrativo de la Función Pública", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"Decreto 1072 de 2015 Sector Trabajo\s*\d+\s*EVA - Gestor Normativo", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"_{4,}|-{4,}", "", text)
+    text = re.sub(r"\[Página \d+\]", "", text)
+    text = re.sub(r"\n{4,}", "\n\n", text)
+    text = re.sub(r" +", " ", text)
+    return text.strip()
 
 # --- PROMPT ESPECIALIZADO (SUMINISTRADO) ---
 _SPECIALIZED_SYSTEM_PROMPT = """Eres un asistente legal especializado en análisis crítico de documentos jurídicos. 

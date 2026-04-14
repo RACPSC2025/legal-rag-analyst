@@ -66,7 +66,7 @@ Estimación de costos basada en los precios vigentes a **abril de 2026** y una c
 | :--- | :--- | :--- | :--- |
 | **Unstructured** | $10.00 - $30.00 | Pago por uso (API) | El modo "Hi-Res" (necesario para legal) es el más costoso. |
 | **Docling** | $0.00 | Open Source (Gratis) | Solo pagas el cómputo (CPU/GPU) si lo corres localmente. |
-| **Llama Parse** | $0.00 - $3.00 | Freemium | Generalmente ofrece 1,000 páginas/día gratis. El excedente es económico. |
+| **Llama Parse** | $0.00 - $3.00 | Freemium | Generalmente ofrece 1,000 páginas gratis. El excedente es económico. |
 | **Amazon Textract** | $1.50 - $50.00 | Pago por uso (AWS) | $1.50 solo OCR; ~$15.00 con Tablas; ~$50.00 con Formularios. |
 
 ### Tabla 2: Comparativa de Calidad y Optimización
