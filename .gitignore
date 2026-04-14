@@ -48,7 +48,7 @@ wheels/
 *.egg
 
 # --- Streamlit / Configuración local ---
-.streamlit/
+# .streamlit/
 
 # --- Editores e IDEs ---
 .vscode/

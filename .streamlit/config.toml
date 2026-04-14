@@ -1,0 +1,3 @@
+# .streamlit/config.toml
+[logger]
+level = "error"  # Solo mostrar errores, no warnings
