@@ -23,6 +23,7 @@ session_pdfs/
 temp_uploads/
 logs/
 *.log
+code
 
 # --- Guías y Skills (Solicitado por el usuario) ---
 agent_skills/
