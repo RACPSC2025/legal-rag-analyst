@@ -72,6 +72,8 @@ def get_strict_retriever(k: int = None):
     Returns:
         Retriever configurado con similarity_search.
     """
+    from src.config import settings
+
     k = k or settings.TOP_K
     vector_store = get_vector_store()
     return vector_store.as_retriever(search_type="similarity", search_kwargs={"k": k})
