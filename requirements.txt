@@ -1,27 +1,44 @@
-# Core Frameworks
-streamlit
-langchain
-langchain-community
-langchain-core
-langgraph
-python-dotenv
+# ── Core LLM / RAG ───────────────────────────────────────────────────────
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-aws>=0.2.0
+langchain-chroma>=0.1.4
+langchain-text-splitters>=0.3.0
+langgraph>=0.2.0
 
-# AWS Bedrock & Integration
-boto3
-langchain-aws
+# ── AWS ───────────────────────────────────────────────────────────────────
+boto3>=1.35.0
+botocore>=1.35.0
 
-# Vector Database
-langchain-chroma
-chromadb
+# ── Vector Store ──────────────────────────────────────────────────────────
+chromadb>=0.5.0
 
-# PDF Processing & Ingestion
-pymupdf
-pypdf
-llama-parse
-llama-index
+# ── PDF Processing ────────────────────────────────────────────────────────
+pymupdf>=1.24.0          # PyMuPDF (fitz) — loader principal
+docling>=2.0.0           # IBM Docling — tablas complejas → Markdown
 
-# Utilities
-pydantic
-pydantic-settings
-typing-extensions
-transformers
+# ── Retrieval Híbrido ─────────────────────────────────────────────────────
+rank-bm25>=0.2.2         # BM25 sparse retrieval
+flashrank>=0.2.9         # FlashRank reranking (ms-marco-MiniLM-L-12-v2)
+numpy>=1.26.0
+
+# ── Pydantic / Utils ──────────────────────────────────────────────────────
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+typing-extensions>=4.0.0
+
+# ── UI ────────────────────────────────────────────────────────────────────
+streamlit>=1.38.0
+
+# ── Evaluación y Reporting ────────────────────────────────────────────────
+rich>=13.0.0             # Console output bonito para evaluate_rag_health
+pandas>=2.0.0            # DataFrames para reportes de evaluación
+
+# ── Opcional: LlamaParse (pago, descomentar en producción) ────────────────
+# llama-parse>=0.5.0
+# llama-index>=0.10.0
+
+# ── Transformers (silenciar warnings) ─────────────────────────────────────
+transformers>=4.40.0
