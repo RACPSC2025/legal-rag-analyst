@@ -254,19 +254,91 @@ with tab_admin:
                         paths.append(str(p))
 
                     loader_label = "Docling" if st.session_state.selected_loader == LoaderType.DOCLING else "PyMuPDF"
-                    with st.spinner(f"Ejecutando pipeline de ingesta con {loader_label}..."):
-                        try:
-                            from src.ingestion.ingest_pipeline import run_ingestion_pipeline
 
-                            loader_kwargs = {}
-                            if st.session_state.selected_loader == LoaderType.DOCLING:
-                                loader_kwargs["use_ocr"] = use_ocr
+                    # ── UI de progreso con barra y mensajes dinámicos ──
+                    progress_bar = st.progress(0, text="📄 Preparando documentos...")
+                    status_text = st.empty()
 
-                            result = run_ingestion_pipeline(
-                                pdf_paths=paths,
-                                loader_type=st.session_state.selected_loader,
-                                loader_kwargs=loader_kwargs,
+                    def _progress_callback(stage: str, progress_pct: float, detail: str = ""):
+                        """Actualiza la barra de progreso y el mensaje de estado."""
+                        progress_bar.progress(progress_pct / 100, text=stage)
+                        if detail:
+                            status_text.info(detail)
+
+                    try:
+                        from src.ingestion.ingest_pipeline import (
+                            run_ingestion_pipeline,
+                            _validate_pdf_paths,
+                            _batch_add_documents,
+                        )
+                        from src.config import get_embeddings, settings
+                        from src.ingestion.factory import load_pdfs
+                        from langchain_chroma import Chroma
+
+                        _progress_callback("📄 Cargando PDFs...", 10,
+                            f"Leyendo {len(paths)} archivo(s) con {loader_label}...")
+
+                        loader_kwargs = {}
+                        if st.session_state.selected_loader == LoaderType.DOCLING:
+                            loader_kwargs["use_ocr"] = use_ocr
+
+                        documents = load_pdfs(
+                            paths,
+                            loader_type=st.session_state.selected_loader,
+                            **loader_kwargs,
+                        )
+
+                        if not documents:
+                            progress_bar.empty()
+                            status_text.empty()
+                            st.error("No se pudieron extraer fragmentos de los PDFs.")
+                            for p in paths:
+                                try:
+                                    os.remove(p)
+                                except Exception:
+                                    pass
+                        else:
+                            _progress_callback("🧠 Generando embeddings...", 30,
+                                f"{len(documents)} fragmentos extraídos. Enviando a Bedrock...")
+
+                            embeddings = get_embeddings()
+                            vector_store = Chroma(
+                                persist_directory=str(settings.STORAGE_PATH),
+                                embedding_function=embeddings,
+                                collection_name=settings.COLLECTION_NAME,
                             )
+
+                            # Ejecutar batch con actualización visual
+                            total = len(documents)
+                            batch_size = settings.BATCH_SIZE
+                            added = 0
+                            num_batches = (total + batch_size - 1) // batch_size
+
+                            for i in range(0, total, batch_size):
+                                batch = documents[i : i + batch_size]
+                                batch_num = i // batch_size + 1
+                                pct = 30 + int((batch_num / num_batches) * 60)
+
+                                _progress_callback(
+                                    f"🧠 Indexando lote {batch_num}/{num_batches}...",
+                                    pct,
+                                    f"Fragmento {i+1}–{min(i + batch_size, total)} de {total}"
+                                )
+
+                                vector_store.add_documents(batch)
+                                added += len(batch)
+
+                                # Pequeña pausa entre batches
+                                if i + batch_size < total:
+                                    import time
+                                    time.sleep(0.5)
+
+                            # Resetear singleton del vector store
+                            from src.retrieval import reset_vector_store
+                            reset_vector_store()
+
+                            _progress_callback("✅ Finalizando...", 100,
+                                f"{added} fragmentos indexados correctamente.")
 
                             # Limpiar temporales
                             for p in paths:
@@ -275,20 +347,26 @@ with tab_admin:
                                 except Exception:
                                     pass
 
-                            if result["docs_indexed"] > 0:
+                            # Pequeña pausa para que el usuario vea el 100%
+                            import time
+                            time.sleep(0.8)
+
+                            progress_bar.empty()
+                            status_text.empty()
+
+                            if added > 0:
                                 st.success(
-                                    f"✅ {result['docs_indexed']} fragmentos indexados "
-                                    f"desde {len(result['sources'])} archivo(s)."
+                                    f"✅ {added} fragmentos indexados "
+                                    f"desde {len(paths)} archivo(s) con {loader_label}."
                                 )
-                                st.rerun()  # Refrescar contador del sidebar
+                                st.rerun()
                             else:
                                 st.error("No se indexaron documentos. Revisa los logs.")
-                                if result["errors"]:
-                                    for err in result["errors"]:
-                                        st.error(f"• {err}")
 
-                        except Exception as e:
-                            st.error(f"Error en pipeline de ingesta: {e}")
+                    except Exception as e:
+                        progress_bar.empty()
+                        status_text.empty()
+                        st.error(f"Error en pipeline de ingesta: {e}")
 
         # ── MODO MESA: carga temporal ──────────────────────────────────────
         else:

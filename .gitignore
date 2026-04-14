@@ -12,15 +12,12 @@ Scripts/
 pyvenv.cfg
 
 # --- Carpetas de Datos y Almacenamiento (ChromaDB) ---
-storage/
 data/storage/
 data/processed/
 *.sqlite3
 *.db
 
 # --- Archivos Temporales de Aplicación ---
-session_pdfs/
-temp_uploads/
 logs/
 *.log
 code
