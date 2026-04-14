@@ -45,11 +45,11 @@ class Settings:
     MAX_RETRIES: int = int(os.getenv("MAX_RETRIES", "3"))
 
     # ── Retrieval ───────────────────────────────────────────────────────────
-    TOP_K: int = int(os.getenv("TOP_K_DOCS", "4"))
+    TOP_K: int = int(os.getenv("TOP_K_DOCS", "10"))
 
     # ── Chunking (para ingesta de nuevos PDFs) ──────────────────────────────
-    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "1500"))
-    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "300"))
+    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "2500"))
+    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "400"))
     BATCH_SIZE: int = int(os.getenv("INGESTION_BATCH_SIZE", "5"))
 
     # ── Rutas ───────────────────────────────────────────────────────
