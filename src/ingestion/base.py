@@ -1,30 +1,35 @@
 """
-Base loader interface para PDFs.
-Define el contrato que deben implementar todos los loaders.
+Base Ingestion — Contratos e Interfaces de Datos
+─────────────────────────────────────────────────
+Define la estructura de datos que viaja a través del pipeline.
 """
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field
 
-from langchain_core.documents import Document
-
+class IngestionResult(BaseModel):
+    """Objeto estandarizado de salida tras la extracción de un documento."""
+    content: str = Field(..., description="Contenido textual extraído (Markdown o texto plano)")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadatos extraídos del documento")
+    source_path: str = Field(..., description="Ruta original del archivo fuente")
+    tool_used: str = Field(..., description="Nombre de la herramienta que realizó la extracción")
+    pages: int = Field(default=0, description="Número de páginas procesadas")
+    success: bool = Field(True, description="Estado de la operación")
+    error: Optional[str] = Field(None, description="Mensaje de error si falló")
 
 class BasePDFLoader(ABC):
-    """Interfaz base para loaders de PDF."""
-
+    """Interfaz obligatoria para todos los cargadores de la carpeta loaders/."""
+    
     @abstractmethod
-    def load(self, pdf_path: str | Path) -> List[Document]:
-        """Carga un PDF y retorna lista de Documents."""
-        pass
-
-    @abstractmethod
-    def load_multiple(self, pdf_paths: List[str | Path]) -> List[Document]:
-        """Carga múltiples PDFs."""
+    def load(self, file_path: Path, **kwargs) -> IngestionResult:
+        """Extrae el contenido de un archivo y devuelve un IngestionResult."""
         pass
 
     @property
     @abstractmethod
-    def loader_type(self) -> str:
-        """Retorna el tipo de loader (ej: 'pymupdf', 'llamaparse')."""
+    def name(self) -> str:
+        """Nombre identificativo del motor."""
         pass
