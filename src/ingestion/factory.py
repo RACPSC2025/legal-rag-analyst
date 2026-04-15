@@ -33,8 +33,8 @@ def get_loader(loader_type: LoaderType | str) -> BasePDFLoader:
         loader_type = LoaderType(loader_type.lower())
 
     if loader_type == LoaderType.DOCLING:
-        from src.ingestion.loaders.pdf_docling import DoclingPDFLoader
-        return DoclingPDFLoader()
+        from src.ingestion.loaders.pdf_docling import DoclingLoader
+        return DoclingLoader()
     
     elif loader_type == LoaderType.PYMUPDF:
         from src.ingestion.loaders.pdf_pymupdf import PyMuPDFLoader
