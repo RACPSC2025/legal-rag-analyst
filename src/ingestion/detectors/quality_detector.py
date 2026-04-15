@@ -72,8 +72,13 @@ class PDFQualityDetector:
                 text_coverages.append(coverage)
 
                 # Detección de tablas por caracteres de dibujo o palabras clave
-                if page.get_tables() or "│" in text or ("Tabla" in text and "Si" in text):
-                    has_tables = True
+                try:
+                    tabs = page.find_tables()
+                    if tabs.tables or "│" in text or ("Tabla" in text and "Si" in text):
+                        has_tables = True
+                except:
+                    if "│" in text or ("Tabla" in text and "Si" in text):
+                        has_tables = True
                 if page.get_images():
                     has_images = True
 
