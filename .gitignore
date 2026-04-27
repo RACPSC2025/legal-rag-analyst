@@ -24,6 +24,9 @@ code
 
 # --- Guías y Skills (Solicitado por el usuario) ---
 agent_skills/
+Legal v2/
+doc/
+
 
 # --- Python / Bytecode ---
 __pycache__/

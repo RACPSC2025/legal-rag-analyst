@@ -1,0 +1,12 @@
+Requirement already satisfied: pdfplumber in .\venv\Lib\site-packages (0.11.9)
+Collecting pdfminer.six==20251230 (from pdfplumber)
+  Using cached pdfminer_six-20251230-py3-none-any.whl.metadata (4.3 kB)
+Requirement already satisfied: Pillow>=9.1 in .\venv\Lib\site-packages (from pdfplumber) (12.2.0)
+Requirement already satisfied: pypdfium2>=4.18.0 in .\venv\Lib\site-packages (from pdfplumber) (5.7.0)
+Requirement already satisfied: charset-normalizer>=2.0.0 in .\venv\Lib\site-packages (from pdfminer.six==20251230->pdfplumber) (3.4.6)
+Requirement already satisfied: cryptography>=36.0.0 in .\venv\Lib\site-packages (from pdfminer.six==20251230->pdfplumber) (46.0.7)
+Requirement already satisfied: cffi>=2.0.0 in .\venv\Lib\site-packages (from cryptography>=36.0.0->pdfminer.six==20251230->pdfplumber) (2.0.0)
+Requirement already satisfied: pycparser in .\venv\Lib\site-packages (from cffi>=2.0.0->cryptography>=36.0.0->pdfminer.six==20251230->pdfplumber) (3.0)
+Using cached pdfminer_six-20251230-py3-none-any.whl (6.6 MB)
+Installing collected packages: pdfminer.six
+Successfully installed pdfminer.six-20251230
