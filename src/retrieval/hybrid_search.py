@@ -27,6 +27,7 @@ from langchain_core.documents import Document
 from langchain_chroma import Chroma
 
 from src.config import settings, get_embeddings
+from src.retrieval.metadata_filters import extract_filters
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +141,13 @@ class FenixHybridRetriever:
             ... )
         """
         logger.info(f"[HYBRID v2] Iniciando búsqueda híbrida para: '{query[:80]}...'")
+        
+        # ── TASK-014: Extracción automática de filtros de metadata ───────────
+        if metadata_filter is None:
+            auto_filters = extract_filters(query)
+            if auto_filters:
+                metadata_filter = auto_filters
+                logger.info(f"[TASK-014] ✅ Filtros automáticos aplicados: {metadata_filter}")
         
         # Pool de candidatos más grande para RRF
         candidate_pool = top_k * 3

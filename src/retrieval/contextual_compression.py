@@ -44,6 +44,12 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 from src.config import get_llm
+from src.retrieval.table_processor import (
+    TableDetector,
+    MarkdownTableParser,
+    MarkdownTablePrinter,
+    TablePreserver,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -133,9 +139,21 @@ class ContextualCompressor:
         """
         self.use_llm = use_llm
         self.batch_size = min(batch_size, _MAX_LLM_CALLS_PER_BATCH)
+        
+        # Inicializar componentes de tabla
+        self.table_detector = TableDetector()
+        self.table_parser = MarkdownTableParser()
+        self.table_printer = MarkdownTablePrinter()
+        self.table_preserver: Optional[TablePreserver] = None  # Lazy init (requiere LLM)
+        
+        # Inicializar métricas de observabilidad
+        from src.retrieval.table_processor import TableMetrics
+        self.table_metrics = TableMetrics()
+        
         logger.info(
             f"[COMPRESSOR] Inicializado: "
-            f"use_llm={use_llm}, batch_size={self.batch_size}"
+            f"use_llm={use_llm}, batch_size={self.batch_size}, "
+            f"table_processor=enabled"
         )
 
     def compress(
@@ -189,6 +207,18 @@ class ContextualCompressor:
             content = doc.page_content
             meta = doc.metadata.copy()
 
+            # ── Detección de tablas ──────────────────────────────────────────
+            detection = self.table_detector.detect(content)
+            meta["contains_table"] = detection.contains_table
+            meta["table_count"] = detection.table_count
+            meta["table_detection_confidence"] = detection.confidence
+            
+            # Registrar métricas de detección
+            self.table_metrics.record_detection(
+                detection.detection_time_ms,
+                detection.table_count
+            )
+
             # ── Decisión 1: Passthrough para chunks cortos ───────────────────
             if len(content) < _MAX_PASSTHROUGH_LENGTH:
                 meta["compression_applied"] = False
@@ -205,10 +235,33 @@ class ContextualCompressor:
                 continue
 
             # ── Decisión 2: Detectar si tiene tabla ──────────────────────────
-            is_table = meta.get("is_table", False) or self._has_table(content)
+            is_table = detection.contains_table or meta.get("is_table", False)
 
-            # ── Decisión 3: LLM o Sentence-level ─────────────────────────────
-            if self.use_llm and (is_table or len(content) >= _MIN_COMPRESS_LENGTH) and llm_budget > 0:
+            # ── Decisión 3: Compresión con preservación de tablas ────────────
+            if detection.contains_table and self.use_llm and llm_budget > 0:
+                # Usar método especializado de preservación de tablas
+                extracted, method = self._compress_with_table_preservation(
+                    content, question, detection
+                )
+                llm_budget -= 1
+                stats["llm"] += 1
+                
+                # Añadir metadata específica de tablas
+                meta["table_preserved"] = (method == "table_preserved")
+                if detection.table_ranges:
+                    # Calcular dimensiones de cada tabla
+                    table_dimensions = []
+                    for start, end in detection.table_ranges:
+                        rows = end - start + 1
+                        # Estimar columnas (contar pipes en primera línea)
+                        first_line = content.split('\n')[start] if start < len(content.split('\n')) else ""
+                        cols = first_line.count('|') - 1 if '|' in first_line else 0
+                        table_dimensions.append((rows, cols))
+                    meta["table_dimensions"] = table_dimensions
+                meta["table_integrity_verified"] = (method == "table_preserved")
+                
+            # ── Decisión 4: LLM o Sentence-level para texto sin tablas ───────
+            elif self.use_llm and (is_table or len(content) >= _MIN_COMPRESS_LENGTH) and llm_budget > 0:
                 extracted, method = self._llm_compress(content, question)
                 llm_budget -= 1
                 stats["llm"] += 1
@@ -265,10 +318,100 @@ class ContextualCompressor:
             f"LLM={stats['llm']}, "
             f"Sentence={stats['sentence']}"
         )
+        
+        # Logging de métricas de tablas
+        table_summary = self.table_metrics.get_summary()
+        if table_summary["tables_detected"] > 0:
+            logger.info(
+                f"[COMPRESSOR] Métricas de tablas: "
+                f"detectadas={table_summary['tables_detected']}, "
+                f"preservadas={table_summary['tables_preserved']}, "
+                f"violaciones={table_summary['integrity_violations']}, "
+                f"success_rate={table_summary['success_rate']:.1%}"
+            )
 
         return compressed
 
     # ── Métodos de compresión ─────────────────────────────────────────────────
+
+    def _compress_with_table_preservation(
+        self,
+        content: str,
+        question: str,
+        detection: "TableDetectionResult",
+    ) -> Tuple[str, str]:
+        """
+        Comprime fragmento preservando tablas completas.
+        
+        Args:
+            content: Contenido del fragmento con tablas
+            question: Pregunta del usuario
+            detection: Resultado de detección de tablas
+            
+        Returns:
+            Tupla (contenido_comprimido, método)
+        """
+        import time
+        start_time = time.perf_counter()
+        
+        try:
+            # Lazy init de TablePreserver (requiere LLM)
+            if self.table_preserver is None:
+                llm = get_llm(task="generate")
+                self.table_preserver = TablePreserver(llm, self.table_parser)
+                logger.debug("[COMPRESSOR] TablePreserver inicializado (lazy)")
+            
+            # Preservar tablas durante compresión
+            preserved = self.table_preserver.preserve_with_llm(
+                content, question, detection.table_ranges
+            )
+            
+            # Extraer tablas para validación
+            tables_original = self.table_detector.extract_tables(content)
+            tables_preserved = self.table_detector.extract_tables(preserved)
+            
+            # Validar que todas las tablas se preservaron correctamente
+            if len(tables_original) != len(tables_preserved):
+                logger.warning(
+                    f"[COMPRESSOR] Número de tablas cambió: "
+                    f"original={len(tables_original)}, preservado={len(tables_preserved)}. "
+                    f"Usando fragmento original."
+                )
+                preservation_time_ms = (time.perf_counter() - start_time) * 1000
+                self.table_metrics.record_preservation(preservation_time_ms, success=False)
+                return content, "table_fallback_original"
+            
+            # Validar integridad de cada tabla
+            for i, (orig_table, pres_table) in enumerate(zip(tables_original, tables_preserved)):
+                is_valid, error = self.table_preserver.validate_preservation(
+                    orig_table, pres_table
+                )
+                
+                if not is_valid:
+                    logger.warning(
+                        f"[COMPRESSOR] Validación fallida para tabla {i + 1}: {error}. "
+                        f"Usando fragmento original."
+                    )
+                    preservation_time_ms = (time.perf_counter() - start_time) * 1000
+                    self.table_metrics.record_preservation(preservation_time_ms, success=False)
+                    return content, "table_fallback_original"
+            
+            # Todas las validaciones pasaron
+            preservation_time_ms = (time.perf_counter() - start_time) * 1000
+            self.table_metrics.record_preservation(preservation_time_ms, success=True)
+            logger.debug(
+                f"[COMPRESSOR] Preservación exitosa: {len(tables_original)} tablas validadas"
+            )
+            return preserved, "table_preserved"
+            
+        except Exception as e:
+            logger.error(
+                f"[COMPRESSOR] Error en preservación de tablas: {str(e)}. "
+                f"Usando fragmento original."
+            )
+            preservation_time_ms = (time.perf_counter() - start_time) * 1000
+            self.table_metrics.record_preservation(preservation_time_ms, success=False)
+            return content, "table_fallback_original"
 
     def _llm_compress(self, content: str, question: str) -> Tuple[str, str]:
         """
