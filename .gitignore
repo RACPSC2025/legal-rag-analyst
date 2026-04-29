@@ -11,6 +11,9 @@ Include/
 Scripts/
 pyvenv.cfg
 
+# IMPORTANTE: .env está ignorado pero .env.example NO (debe estar en Git)
+!.env.example
+
 # --- Carpetas de Datos y Almacenamiento (ChromaDB) ---
 data/storage/
 data/processed/
