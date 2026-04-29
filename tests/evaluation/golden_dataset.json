@@ -1,0 +1,228 @@
+{
+  "dataset_info": {
+    "name": "Golden Dataset - RAG Legal Colombiano",
+    "version": "1.0.0",
+    "created_at": "2026-04-27",
+    "description": "Dataset de evaluación con 20+ preguntas reales de derecho colombiano para métricas RAGAS",
+    "total_questions": 22,
+    "categories": [
+      "Derecho Ambiental",
+      "Derecho Administrativo",
+      "Derecho Laboral",
+      "Derecho Tributario"
+    ]
+  },
+  "test_cases": [
+    {
+      "id": "Q001",
+      "category": "Derecho Ambiental",
+      "question": "¿Cuáles son los requisitos para obtener una concesión de aguas superficiales en Colombia?",
+      "ground_truth": "Para obtener una concesión de aguas superficiales se requiere: 1) Presentar solicitud escrita ante la autoridad ambiental competente, 2) Adjuntar planos topográficos del área, 3) Certificado de tradición y libertad del predio, 4) Estudio de disponibilidad del recurso, 5) Descripción del uso que se dará al agua, 6) Sistema de captación y conducción propuesto.",
+      "expected_sources": ["Decreto 1076 de 2015", "Artículo 2.2.3.2.9.1"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q002",
+      "category": "Derecho Ambiental",
+      "question": "¿Qué es el Plan de Manejo Ambiental (PMA) y quién debe presentarlo?",
+      "ground_truth": "El Plan de Manejo Ambiental (PMA) es el conjunto detallado de medidas y actividades que, producto de una evaluación ambiental, están orientadas a prevenir, mitigar, corregir o compensar los impactos y efectos ambientales debidamente identificados. Debe ser presentado por el titular del proyecto, obra o actividad que requiera licencia ambiental.",
+      "expected_sources": ["Decreto 1076 de 2015", "Artículo 2.2.2.3.6.1"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q003",
+      "category": "Derecho Ambiental",
+      "question": "¿Cuáles son las tarifas de tasas retributivas por vertimientos puntuales?",
+      "ground_truth": "Las tarifas de tasas retributivas varían según la carga contaminante (DBO y SST) y el factor regional. La tarifa mínima nacional es de $100 por kilogramo de DBO y $50 por kilogramo de SST, pero cada autoridad ambiental puede establecer tarifas superiores según su factor regional.",
+      "expected_sources": ["Decreto 1076 de 2015", "Artículo 2.2.9.3.2.3"],
+      "difficulty": "hard",
+      "requires_table": true
+    },
+    {
+      "id": "Q004",
+      "category": "Derecho Administrativo",
+      "question": "¿Cuál es el plazo para resolver un recurso de reposición contra un acto administrativo?",
+      "ground_truth": "El recurso de reposición debe resolverse dentro de los quince (15) días siguientes a su interposición. Si no se resuelve en ese término, se entenderá que la decisión es negativa.",
+      "expected_sources": ["Código de Procedimiento Administrativo", "Artículo 76"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q005",
+      "category": "Derecho Administrativo",
+      "question": "¿Qué es la revocatoria directa de un acto administrativo?",
+      "ground_truth": "La revocatoria directa es la facultad que tienen las autoridades administrativas para dejar sin efectos un acto administrativo que sea contrario a la Constitución o a la ley, o cuando no esté conforme con el interés público o social, o atente contra él. Puede ser solicitada por cualquier persona o decretada de oficio.",
+      "expected_sources": ["Código de Procedimiento Administrativo", "Artículo 93"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q006",
+      "category": "Derecho Laboral",
+      "question": "¿Cuál es el monto de la indemnización por despido sin justa causa para un trabajador con contrato a término indefinido?",
+      "ground_truth": "Para trabajadores con contrato a término indefinido, la indemnización es: a) Para trabajadores que devenguen menos de 10 salarios mínimos: 30 días de salario por el primer año y 20 días adicionales por cada año subsiguiente, proporcionalmente por fracción. b) Para trabajadores que devenguen 10 o más salarios mínimos: 20 días de salario por el primer año y 15 días adicionales por cada año subsiguiente.",
+      "expected_sources": ["Código Sustantivo del Trabajo", "Artículo 64"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q007",
+      "category": "Derecho Laboral",
+      "question": "¿Cuáles son las prestaciones sociales obligatorias en Colombia?",
+      "ground_truth": "Las prestaciones sociales obligatorias son: 1) Prima de servicios (un mes de salario por año, pagada en dos cuotas), 2) Cesantías (un mes de salario por año), 3) Intereses sobre cesantías (12% anual), 4) Vacaciones (15 días hábiles por año), 5) Dotación (tres veces al año para trabajadores que devenguen hasta 2 SMMLV).",
+      "expected_sources": ["Código Sustantivo del Trabajo", "Artículos 249, 306, 186"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q008",
+      "category": "Derecho Tributario",
+      "question": "¿Cuál es la tarifa del impuesto de renta para personas jurídicas en Colombia?",
+      "ground_truth": "La tarifa general del impuesto de renta para sociedades nacionales y extranjeras es del 35% sobre la renta líquida gravable. Existen tarifas especiales para algunos sectores como usuarios de zona franca (20%), hoteles nuevos (9%), y otros incentivos tributarios.",
+      "expected_sources": ["Estatuto Tributario", "Artículo 240"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q009",
+      "category": "Derecho Tributario",
+      "question": "¿Qué es el régimen simple de tributación y quiénes pueden acogerse?",
+      "ground_truth": "El Régimen Simple de Tributación (SIMPLE) es un modelo de tributación opcional que sustituye el impuesto de renta y complementarios, y unifica el recaudo de IVA e ICA. Pueden acogerse personas naturales y jurídicas con ingresos brutos inferiores a 80.000 UVT en el año anterior, que no sean sociedades extranjeras ni entidades del régimen especial.",
+      "expected_sources": ["Estatuto Tributario", "Artículo 905"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q010",
+      "category": "Derecho Ambiental",
+      "question": "¿Cuál es el procedimiento para obtener un permiso de emisiones atmosféricas?",
+      "ground_truth": "El procedimiento incluye: 1) Presentar solicitud ante la autoridad ambiental con información técnica de la fuente emisora, 2) Adjuntar caracterización de emisiones y diseño del sistema de control, 3) La autoridad evalúa en máximo 3 meses, 4) Puede requerir información adicional, 5) Otorga o niega el permiso mediante resolución motivada.",
+      "expected_sources": ["Decreto 1076 de 2015", "Artículo 2.2.5.1.7.1"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q011",
+      "category": "Derecho Ambiental",
+      "question": "¿Qué sanciones puede imponer la autoridad ambiental por infracciones ambientales?",
+      "ground_truth": "Las sanciones ambientales incluyen: 1) Multas diarias hasta por 5.000 SMMLV, 2) Cierre temporal o definitivo del establecimiento, 3) Decomiso preventivo de productos o elementos, 4) Suspensión de obra o actividad, 5) Revocatoria o caducidad de licencia, permiso o autorización, 6) Demolición de obra a costa del infractor.",
+      "expected_sources": ["Ley 1333 de 2009", "Artículo 40"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q012",
+      "category": "Derecho Administrativo",
+      "question": "¿Cuál es el término de caducidad para ejercer la acción de nulidad y restablecimiento del derecho?",
+      "ground_truth": "El término de caducidad para ejercer la acción de nulidad y restablecimiento del derecho es de cuatro (4) meses, contados a partir del día siguiente al de la publicación, notificación, comunicación o ejecución del acto, según el caso.",
+      "expected_sources": ["Código de Procedimiento Administrativo", "Artículo 164"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q013",
+      "category": "Derecho Administrativo",
+      "question": "¿Qué es el silencio administrativo positivo?",
+      "ground_truth": "El silencio administrativo positivo es una figura jurídica mediante la cual, transcurrido el término legal para resolver una solicitud sin que la autoridad se haya pronunciado, se entiende que la petición ha sido resuelta favorablemente. Opera principalmente en solicitudes de licencias, permisos y autorizaciones, salvo excepciones legales.",
+      "expected_sources": ["Código de Procedimiento Administrativo", "Artículo 83"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q014",
+      "category": "Derecho Laboral",
+      "question": "¿Cuál es la jornada máxima legal de trabajo en Colombia?",
+      "ground_truth": "La jornada ordinaria de trabajo es de máximo 8 horas diarias y 48 horas semanales. El trabajo suplementario (horas extras) no puede exceder de 2 horas diarias y 12 horas semanales. Existen jornadas especiales para menores de edad y trabajos nocturnos.",
+      "expected_sources": ["Código Sustantivo del Trabajo", "Artículo 161"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q015",
+      "category": "Derecho Laboral",
+      "question": "¿Cuáles son los recargos por trabajo nocturno, dominical y festivo?",
+      "ground_truth": "Los recargos son: 1) Trabajo nocturno (10pm-6am): 35% adicional sobre el valor de la hora ordinaria, 2) Trabajo dominical o festivo: 75% adicional, 3) Hora extra diurna: 25% adicional, 4) Hora extra nocturna: 75% adicional, 5) Hora extra dominical o festiva diurna: 100% adicional, 6) Hora extra dominical o festiva nocturna: 150% adicional.",
+      "expected_sources": ["Código Sustantivo del Trabajo", "Artículos 168, 179"],
+      "difficulty": "hard",
+      "requires_table": true
+    },
+    {
+      "id": "Q016",
+      "category": "Derecho Tributario",
+      "question": "¿Cuáles son las tarifas del IVA en Colombia?",
+      "ground_truth": "Las tarifas del IVA en Colombia son: 1) Tarifa general: 19%, 2) Tarifa reducida: 5% (aplica a algunos alimentos y productos de primera necesidad), 3) Tarifa 0%: para productos excluidos con derecho a devolución, 4) Exentos: bienes y servicios no gravados sin derecho a devolución.",
+      "expected_sources": ["Estatuto Tributario", "Artículos 468, 468-1"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q017",
+      "category": "Derecho Tributario",
+      "question": "¿Qué es la retención en la fuente y quiénes están obligados a practicarla?",
+      "ground_truth": "La retención en la fuente es un mecanismo de recaudo anticipado de impuestos mediante el cual el pagador retiene un porcentaje del pago y lo consigna a la DIAN. Están obligados a retener: entidades públicas, grandes contribuyentes, personas jurídicas, sociedades de hecho, y personas naturales que cumplan ciertos requisitos de patrimonio o ingresos.",
+      "expected_sources": ["Estatuto Tributario", "Artículo 368"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q018",
+      "category": "Derecho Ambiental",
+      "question": "¿Qué proyectos requieren licencia ambiental en Colombia?",
+      "ground_truth": "Requieren licencia ambiental proyectos como: 1) Exploración y explotación de hidrocarburos, 2) Construcción de presas y represas, 3) Construcción de puertos marítimos, 4) Construcción de aeropuertos, 5) Proyectos de generación de energía nuclear, 6) Construcción de vías de gran magnitud, 7) Proyectos mineros según su escala, entre otros definidos en el Decreto 1076 de 2015.",
+      "expected_sources": ["Decreto 1076 de 2015", "Artículo 2.2.2.3.2.2"],
+      "difficulty": "medium",
+      "requires_table": true
+    },
+    {
+      "id": "Q019",
+      "category": "Derecho Administrativo",
+      "question": "¿Cuál es el contenido mínimo de un acto administrativo?",
+      "ground_truth": "Todo acto administrativo debe contener: 1) Ser expedido por autoridad competente, 2) Expresar la decisión de manera clara y precisa, 3) Indicar las razones que lo fundamentan (motivación), 4) Señalar los recursos que proceden contra él, 5) Indicar la autoridad ante quien se interponen y el plazo para hacerlo, 6) Estar firmado por la autoridad que lo expide.",
+      "expected_sources": ["Código de Procedimiento Administrativo", "Artículo 42"],
+      "difficulty": "medium",
+      "requires_table": false
+    },
+    {
+      "id": "Q020",
+      "category": "Derecho Laboral",
+      "question": "¿Qué es el auxilio de cesantías y cómo se calcula?",
+      "ground_truth": "El auxilio de cesantías es una prestación social equivalente a un mes de salario por cada año de servicios y proporcionalmente por fracciones de año. Se calcula con base en el último salario mensual devengado, siempre que no haya tenido variación en los últimos tres meses. Si hubo variación, se toma el promedio de lo devengado en el último año.",
+      "expected_sources": ["Código Sustantivo del Trabajo", "Artículo 249"],
+      "difficulty": "easy",
+      "requires_table": false
+    },
+    {
+      "id": "Q021",
+      "category": "Derecho Tributario",
+      "question": "¿Cuáles son los plazos para declarar y pagar el impuesto de renta para personas jurídicas?",
+      "ground_truth": "Las personas jurídicas deben presentar la declaración de renta del año gravable anterior entre los meses de abril y mayo del año siguiente, según el último dígito del NIT. El plazo específico lo establece anualmente el gobierno mediante decreto. El pago puede hacerse en una o dos cuotas.",
+      "expected_sources": ["Estatuto Tributario", "Artículo 596"],
+      "difficulty": "medium",
+      "requires_table": true
+    },
+    {
+      "id": "Q022",
+      "category": "Derecho Ambiental",
+      "question": "¿Qué es la compensación ambiental y cuándo aplica?",
+      "ground_truth": "La compensación ambiental son las acciones dirigidas a resarcir y retribuir a las comunidades, las regiones, localidades y al entorno natural por los impactos o efectos negativos generados por un proyecto que no puedan ser evitados, corregidos, mitigados o sustituidos. Aplica cuando el proyecto genera pérdida de biodiversidad y debe implementarse en áreas ecológicamente equivalentes.",
+      "expected_sources": ["Decreto 1076 de 2015", "Artículo 2.2.2.3.1.1"],
+      "difficulty": "hard",
+      "requires_table": false
+    }
+  ],
+  "evaluation_criteria": {
+    "faithfulness": "Verifica que la respuesta esté fundamentada en los documentos recuperados sin inventar información",
+    "answer_relevancy": "Evalúa qué tan relevante es la respuesta para la pregunta formulada",
+    "context_precision": "Mide si los documentos recuperados son relevantes para la pregunta",
+    "context_recall": "Verifica si todos los elementos de la ground truth están en el contexto recuperado",
+    "answer_correctness": "Compara la respuesta generada con la ground truth esperada"
+  },
+  "usage_notes": [
+    "Este dataset debe actualizarse periódicamente con nuevas preguntas reales de usuarios",
+    "Las ground_truth deben ser validadas por un experto legal antes de usarse en producción",
+    "Los expected_sources ayudan a validar que el retrieval está funcionando correctamente",
+    "Las preguntas marcadas con requires_table=true son críticas para evaluar la preservación de tablas"
+  ]
+}

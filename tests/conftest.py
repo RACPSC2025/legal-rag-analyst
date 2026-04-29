@@ -56,3 +56,64 @@ def mock_env_credentials(monkeypatch):
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", "AKIAIOSFODNN7EXAMPLE")
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY")
     monkeypatch.setenv("AWS_REGION", "us-east-2")
+
+
+# ── Fixtures para tests de tablas (TASK-015) ────────────────────────────────
+
+@pytest.fixture
+def sample_markdown_table() -> str:
+    """Tabla Markdown de ejemplo para tests."""
+    return """
+| Artículo | Plazo   | Requisito         |
+|----------|---------|-------------------|
+| 2.2.1.4  | 30 días | Solicitud escrita |
+| 2.2.1.5  | 15 días | Planos            |
+"""
+
+
+@pytest.fixture
+def sample_table_with_alignment() -> str:
+    """Tabla Markdown con alineación para tests."""
+    return """
+| Left | Center | Right |
+|:-----|:------:|------:|
+| A    | B      | C     |
+"""
+
+
+@pytest.fixture
+def sample_fragment_with_table() -> str:
+    """Fragmento legal con tabla para tests de integración."""
+    return """
+ARTÍCULO 2.2.4.1.2.3. Tarifas de evaluación ambiental.
+
+Las tarifas para la evaluación de estudios ambientales serán las siguientes:
+
+| Tipo de Proyecto | Tarifa (SMLMV) | Plazo (días) |
+|------------------|----------------|--------------|
+| Minería pequeña  | 15             | 30           |
+| Minería mediana  | 45             | 60           |
+| Minería grande   | 120            | 90           |
+
+PARÁGRAFO 1. Las tarifas se actualizarán anualmente según el IPC.
+"""
+
+
+@pytest.fixture
+def sample_multiple_tables() -> str:
+    """Fragmento con múltiples tablas para tests."""
+    return """
+Primera tabla:
+
+| Col1 | Col2 |
+|------|------|
+| A    | B    |
+
+Texto intermedio.
+
+Segunda tabla:
+
+| Col3 | Col4 |
+|------|------|
+| C    | D    |
+"""
