@@ -32,6 +32,18 @@ CATALOG_DIR = Path(settings.ROOT_DIR) / "storage" / "model_catalog"
 CATALOG_DIR.mkdir(parents=True, exist_ok=True)
 CATALOG_PATH = CATALOG_DIR / "available_models.json"
 
+# ── Proveedores Permitidos (Política Corporativa) ───────────────────────────
+# Solo se permiten modelos de proveedores occidentales/aliados específicos.
+# Prohibidos: Modelos de origen asiático (Qwen, DeepSeek, GLM, etc.)
+ALLOWED_PROVIDERS: List[str] = [
+    "anthropic",
+    "amazon",
+    "meta",
+    "google",
+    "openai",
+    "nvidia",
+]
+
 # ── Catálogo manual de fallback ───────────────────────────────────────────────
 # Se usa cuando AWS no es accesible o el catálogo aún no se ha generado.
 # Refleja los modelos configurados en settings.
@@ -56,14 +68,6 @@ _FALLBACK_CATALOG: Dict[str, Any] = {
             "capabilities": ["TEXT"],
             "alias": "llama3-3-70b",
         },
-        {
-            "model_id": "arn:aws:bedrock:us-east-2:762233737662:inference-profile/us.amazon.nova-2-lite-v1:0",
-            "provider": "amazon",
-            "context_length": 256000,
-            "cost_profile": "heavy",
-            "capabilities": ["TEXT"],
-            "alias": "nova-2-lite",
-        },
     ],
 }
 
@@ -74,12 +78,13 @@ _FALLBACK_CATALOG: Dict[str, Any] = {
 def build_model_catalog(force_refresh: bool = False) -> Dict[str, Any]:
     """
     Consulta AWS Bedrock Control Plane y genera el catálogo de modelos.
+    Filtra por ALLOWED_PROVIDERS según política de seguridad.
 
     Args:
         force_refresh: Si True, ignora el caché local y consulta AWS de nuevo.
 
     Returns:
-        Catálogo completo con lista de modelos clasificados.
+        Catálogo filtrado con lista de modelos autorizados.
     """
     if not force_refresh and CATALOG_PATH.exists():
         log.info(f"[REGISTRY] 📚 Cargando catálogo desde caché: {CATALOG_PATH}")
@@ -105,11 +110,26 @@ def build_model_catalog(force_refresh: bool = False) -> Dict[str, Any]:
             "models": [],
         }
 
+        rejected_count = 0
         for model in summaries:
+            # 1. Validar modalidad de salida (TEXT)
             if "TEXT" not in model.get("outputModalities", []):
                 continue
+            
             model_id = model.get("modelId", "")
             provider = model.get("providerName", "").lower()
+            
+            # 2. Filtrar por Proveedores Permitidos (REGLA CORPORATIVA)
+            is_allowed = False
+            for allowed in ALLOWED_PROVIDERS:
+                if allowed in provider:
+                    is_allowed = True
+                    break
+            
+            if not is_allowed:
+                rejected_count += 1
+                continue
+
             catalog["models"].append(
                 {
                     "model_id": model_id,
@@ -123,7 +143,10 @@ def build_model_catalog(force_refresh: bool = False) -> Dict[str, Any]:
         CATALOG_PATH.write_text(
             json.dumps(catalog, indent=2, ensure_ascii=False), encoding="utf-8"
         )
-        log.info(f"[REGISTRY] ✅ Catálogo generado: {len(catalog['models'])} modelos.")
+        log.info(
+            f"[REGISTRY] ✅ Catálogo generado: {len(catalog['models'])} autorizados | "
+            f"{rejected_count} rechazados por política."
+        )
         return catalog
 
     except ClientError as e:
@@ -136,18 +159,30 @@ def build_model_catalog(force_refresh: bool = False) -> Dict[str, Any]:
 
 def load_catalog() -> Dict[str, Any]:
     """
-    Carga el catálogo desde disco. Si no existe, intenta generarlo.
-    Si AWS falla, retorna el catálogo de fallback estático.
+    Carga el catálogo desde disco y aplica el filtro de seguridad ALLOWED_PROVIDERS.
     """
     if CATALOG_PATH.exists():
         try:
             data = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
             if data.get("models"):
+                # Re-aplicar filtro por seguridad (si el archivo fue editado externamente)
+                original_count = len(data["models"])
+                data["models"] = [
+                    m for m in data["models"]
+                    if any(allowed in m.get("provider", "").lower() for allowed in ALLOWED_PROVIDERS)
+                ]
+                
+                if len(data["models"]) < original_count:
+                    log.warning(
+                        f"[REGISTRY] 🛡️ Se filtraron {original_count - len(data['models'])} "
+                        "modelos no autorizados del caché."
+                    )
+                
                 return data
         except Exception as e:
             log.warning(f"[REGISTRY] Error leyendo catálogo: {e}")
 
-    log.warning("[REGISTRY] Catálogo no disponible en disco. Usando fallback estático.")
+    log.warning("[REGISTRY] Catálogo no disponible o corrupto. Usando fallback estático.")
     return _FALLBACK_CATALOG
 
 
