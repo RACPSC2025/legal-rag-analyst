@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-26T11:52:10.608794",
+  "last_updated": "2026-04-29T01:10:59.989561",
   "region": "us-east-2",
   "source": "aws_api",
   "models": [
@@ -544,16 +544,6 @@
       "cost_profile": "light",
       "capabilities": [
         "TEXT"
-      ]
-    },
-    {
-      "model_id": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-      "provider": "anthropic",
-      "context_length": 0,
-      "cost_profile": "heavy",
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
       ]
     },
     {
