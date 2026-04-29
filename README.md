@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚖️ Fénix Legal RAG v2.5
+# ⚖️  AI Analista RAG v2.5
 
 ### Sistema RAG de Grado Industrial para Análisis de Normativa Colombiana
 
@@ -457,28 +457,6 @@ Sistema: [Valida existencia y muestra contenido completo]
 
 ---
 
-## 📈 Roadmap
-
-### v2.6 (Q2 2026)
-- [ ] Memoria conversacional con LangGraph
-- [ ] Multi-hop reasoning para consultas complejas
-- [ ] Fine-tuning de modelos para dominio legal colombiano
-- [ ] Dashboard de analytics en tiempo real
-
-### v3.0 (Q3 2026)
-- [ ] Soporte para más tipos de documentos (DOCX, HTML, TXT)
-- [ ] API REST completa con autenticación
-- [ ] Deployment en AWS/Azure/GCP
-- [ ] Integración con sistemas legales externos
-
-### Futuro
-- [ ] Agente multi-modal (análisis de imágenes en documentos)
-- [ ] Generación automática de contratos
-- [ ] Sistema de recomendación de jurisprudencia
-- [ ] Integración con bases de datos jurídicas oficiales
-
----
-
 ## 🤝 Contribución
 
 ¡Las contribuciones son bienvenidas! Por favor:
@@ -507,7 +485,7 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 
 ## 👥 Autores
 
-- **Equipo Fénix Legal** - *Desarrollo inicial* - [GitHub](https://github.com/tu-usuario)
+- **Equipo Fénix Legal** - *Desarrollo inicial* - [GitHub](https://github.com/RACPSC2025)
 
 ---
 
@@ -519,23 +497,9 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 - [IBM Docling](https://github.com/DS4SD/docling) por el procesamiento de documentos
 - Comunidad open source por las herramientas y librerías
 
----
-
-## 📞 Contacto y Soporte
-
-- **Issues**: [GitHub Issues](https://github.com/tu-usuario/rag-analista-legal/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/tu-usuario/rag-analista-legal/discussions)
-- **Email**: contacto@fenixlegal.com
-- **Documentación**: [docs/](docs/)
-
----
-
 <div align="center">
 
 **⭐ Si este proyecto te resulta útil, considera darle una estrella en GitHub ⭐**
-
-[![GitHub stars](https://img.shields.io/github/stars/tu-usuario/rag-analista-legal?style=social)](https://github.com/tu-usuario/rag-analista-legal/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/tu-usuario/rag-analista-legal?style=social)](https://github.com/tu-usuario/rag-analista-legal/network/members)
 
 ---
 
