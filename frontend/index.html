@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Analista Legal - Inteligencia Jurídica</title>
+    <script>
+      (function() {
+        try {
+          if (typeof window !== 'undefined') {
+            // Polyfill for process/global that many libraries expect
+            if (!window.process) window.process = { env: { NODE_ENV: 'development' } };
+            if (!window.global) window.global = window;
+            
+            // Fix for "Cannot set property fetch of #<Window> which has only a getter"
+            // Some polyfills try to overwrite fetch. We try to provide a dummy setter to avoid the error.
+            var descriptor = Object.getOwnPropertyDescriptor(window, 'fetch') || 
+                             Object.getOwnPropertyDescriptor(Object.getPrototypeOf(window), 'fetch');
+            if (descriptor && !descriptor.writable && !descriptor.set && descriptor.configurable) {
+              var originalFetch = window.fetch;
+              Object.defineProperty(window, 'fetch', {
+                get: function() { return originalFetch; },
+                set: function() { console.warn('Ignored attempt to overwrite fetch'); },
+                configurable: true,
+                enumerable: true
+              });
+            }
+          }
+        } catch (e) {
+             console.log('Shim error:', e);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
