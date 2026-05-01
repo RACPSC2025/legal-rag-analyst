@@ -1,13 +1,13 @@
 """
-Nodos del grafo RAG Legal — Proyecto Fénix.
+Nodos del grafo RAG Legal — Proyecto Fénix v2.5.
 
-Patrón: CRAG (Corrective RAG) + Self-RAG + Hierarchical Retrieval
+Patrón: CRAG (Corrective RAG) + Self-RAG + Hierarchical Retrieval + Verifiable Generation
 """
 
 from __future__ import annotations
 
 import logging
-from typing import List
+from typing import List, Dict, Any, Optional
 
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
@@ -18,9 +18,8 @@ from src.core.state import RagState
 from src.retrieval.hierarchical_retriever import get_hierarchical_retriever
 from src.cache import legal_cache
 from src.schemas.graph_outputs import GradeOutput, HallucinationOutput
-from src.schemas.legal_output import LegalResponse, Citation, LegalRequirement
+from src.schemas.legal_output import LegalAnswer, LegalCitation, LegalRequirement
 from src.services.citation_verifier import CitationVerifier
-from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -109,79 +108,122 @@ def grade_documents(state: RagState) -> dict:
         "grade": "útil" if relevant_docs else "no_útil",
     }
 
-# ── Generación de Respuesta (Two-Step Structured) ──────────────────────────
+# ── Generación de Respuesta (Structured Output) ──────────────────────────
 
-_RETHINKING_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", "Eres un analista jurídico senior colombiano. Extrae pasajes EXACTOS y DATOS TÉCNICOS de los documentos. No resumas, extrae la evidencia literal."),
-    ("human", "Consulta: {question}\n\nDocumentos:\n{context}\n\nExtrae evidencia:")
-])
+_GENERATION_SYSTEM_PROMPT = """Eres Legal Agent, un analista jurídico senior experto en normativa colombiana. 
+Genera una RESPUESTA TÉCNICA basada EXCLUSIVAMENTE en el contexto recuperado.
+
+REGLAS DE ORO:
+1. CITAS TEXTUALES: Por cada afirmación, debes extraer una 'quote' literal del documento.
+2. IDENTIFICACIÓN: Usa el 'article_id' exacto del contexto (ej: 2.2.1.4 o Art. 15).
+3. FIDELIDAD: No parafrasees artículos críticos. Si no estás seguro, no lo cites.
+4. ESTRUCTURA: Separa tu razonamiento jurídico de las evidencias documentales."""
 
 def generate(state: RagState) -> dict:
-    """Genera respuesta legal estructurada (LegalResponse)."""
+    """Genera respuesta legal estructurada inicial."""
     if not state.documents:
         return {"generation": "Sin información suficiente.", "source_docs": []}
 
     llm = get_llm(task="generate")
-    logger.info(f"🧠 Usando {getattr(llm, 'model_id', 'LLM')} para [GENERACIÓN]")
+    logger.info(f"🧠 Usando {getattr(llm, 'model_id', 'LLM')} para [GENERACIÓN ESTRUCTURADA]")
     
-    # Contexto
-    context = "\n\n---\n\n".join([
-        f"[Doc {i+1} - {d.metadata.get('source', 'N/A')} - Art. {d.metadata.get('article', 'N/A')}]:\n{d.page_content}"
+    # Preparar contexto para el LLM
+    context_text = "\n\n---\n\n".join([
+        f"[Doc {i+1} | Source: {d.metadata.get('source', 'N/A')} | Article: {d.metadata.get('article', 'N/A')}]:\n{d.page_content}"
         for i, d in enumerate(state.documents)
     ])
     
-    # Fase 1: Rethinking
-    logger.info("[GENERATE] Fase 1: Rethinking...")
-    key_passages = (_RETHINKING_PROMPT | llm | StrOutputParser()).invoke({
-        "question": state.question, "context": context
-    })
-    
-    # Fase 2: Síntesis Estructurada
-    logger.info("[GENERATE] Fase 2: Síntesis...")
-    structured_llm = llm.with_structured_output(LegalResponse)
+    # Configurar structured output
+    structured_llm = llm.with_structured_output(LegalAnswer)
     
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """Eres Legal Agent. Genera una RESPUESTA TÉCNICA basada en PASAJES y CONTEXTO.
-        REGLAS:
-        - CITAS: Objeto Citation con fragmento 'text' EXACTO.
-        - REQUERIMIENTOS: Identifica plazos y obligaciones en 'requirements'."""),
-        ("human", "Consulta: {question}\n\nEvidencia:\n{passages}\n\nContexto:\n{context}")
+        ("system", _GENERATION_SYSTEM_PROMPT),
+        ("human", "Consulta: {question}\n\nContexto Legal:\n{context}")
     ])
     
     try:
-        response_obj: LegalResponse = (prompt | structured_llm).invoke({
-            "question": state.question, "passages": key_passages, "context": context
-        })
+        # Si hay feedback de una verificación fallida anterior, lo incluimos
+        human_input = {"question": state.question, "context": context_text}
         
-        # Fase 3: Verificación Fuzzy
-        verifier = CitationVerifier(threshold=0.85)
-        v_count = 0
-        for cit in response_obj.citations:
-            is_v, _ = verifier.verify_citation(cit, context)
-            cit.verified = is_v
-            if is_v: v_count += 1
+        if getattr(state, "verification_feedback", None):
+            logger.info("[GENERATE] Recibido feedback de auditoría. Aplicando corrección...")
+            prompt.append(("assistant", "Respuesta previa fallida por discrepancias."))
+            prompt.append(("human", f"CORRIGE basándote en este feedback: {state.verification_feedback}"))
+            
+        response_obj: LegalAnswer = (prompt | structured_llm).invoke(human_input)
         
-        response_obj.confidence_score = round(v_count / len(response_obj.citations), 2) if response_obj.citations else 0.5
+        return {
+            "legal_answer": response_obj,
+            "generation": response_obj.answer,
+            "attempts": state.attempts + 1
+        }
             
     except Exception as e:
-        logger.error(f"[GENERATE] Error: {e}")
-        return {"generation": "Error de estructura.", "source_docs": []}
+        logger.error(f"[GENERATE] Error en generación estructurada: {e}")
+        return {"generation": "Error crítico de estructura.", "source_docs": []}
 
-    source_names = list({d.metadata.get("source") for d in state.documents if d.metadata.get("source")})
+# ── Verificación de Citas y Auditoría (Audit Node) ──────────────────────────
+
+def verify_citations_node(state: RagState) -> dict:
+    """
+    Nodo Auditor: Verifica la fidelidad de las citas generadas y la exactitud de cifras.
+    Actualiza el objeto LegalAnswer con estados de verificación, scores y discrepancias.
+    """
+    logger.info("[AUDIT] Iniciando auditoría técnica (Citas + Números)...")
     
-    try: legal_cache.set(state.question, response_obj.dict())
-    except: pass
-
+    legal_answer: LegalAnswer = state.legal_answer
+    if not legal_answer:
+        logger.warning("[AUDIT] No hay objeto legal_answer para auditar.")
+        return {"verification_passed": True}
+        
+    retrieved_docs = [
+        {"page_content": d.page_content, "metadata": d.metadata} 
+        for d in state.documents
+    ]
+    
+    verifier = CitationVerifier(threshold=0.85)
+    
+    # Ejecutar auditoría dual: Citas + Números
+    verified_citations, numeric_discrepancies = verifier.audit_response(
+        llm_answer=legal_answer.answer,
+        citations=legal_answer.citations,
+        context=retrieved_docs
+    )
+    
+    # Actualizar objeto original con hallazgos
+    legal_answer.citations = verified_citations
+    legal_answer.numeric_discrepancies = numeric_discrepancies
+    
+    # Reconstruir para disparar validadores de Pydantic
+    updated_answer = LegalAnswer(**legal_answer.model_dump())
+    summary = updated_answer.verification_summary()
+    
+    passed = summary["verification_passed"]
+    
+    if not passed:
+        logger.warning(f"[AUDIT] ❌ Auditoría fallida: {len(summary['failed_citations'])} citas y {len(numeric_discrepancies)} números incorrectos.")
+        
+        # Feedback detallado combinando ambos tipos de fallos
+        feedback_parts = []
+        if summary["failed_citations"]:
+            feedback_parts.append(f"FALLOS EN CITAS: {summary['failed_citations']}")
+        if numeric_discrepancies:
+            feedback_parts.append(f"FALLOS NUMÉRICOS: {numeric_discrepancies}")
+            
+        return {
+            "legal_answer": updated_answer,
+            "verification_passed": False,
+            "verification_feedback": " | ".join(feedback_parts)
+        }
+    
+    logger.info(f"[AUDIT] ✅ Auditoría exitosa. Confidence: {updated_answer.confidence_score:.2f}")
     return {
-        "generation": response_obj.answer,
-        "source_docs": source_names,
-        "attempts": state.attempts + 1,
-        "verified_citations": [c.dict() for c in response_obj.citations],
-        "legal_requirements": [r.dict() for r in response_obj.requirements],
-        "confidence_score": response_obj.confidence_score
+        "legal_answer": updated_answer,
+        "verification_passed": True,
+        "confidence_score": updated_answer.confidence_score
     }
 
-# ── Verificación de Alucinaciones ───────────────────────────────────────────
+# ── Verificación de Alucinaciones (LLM-based) ───────────────────────────
 
 _HALLUCINATION_PROMPT = ChatPromptTemplate.from_messages([
     ("system", "Eres un auditor jurídico. Compara RESPUESTA vs DOCUMENTOS. Detecta datos inventados."),
@@ -189,7 +231,7 @@ _HALLUCINATION_PROMPT = ChatPromptTemplate.from_messages([
 ])
 
 def check_hallucination(state: RagState) -> dict:
-    """Detecta alucinaciones."""
+    """Detecta alucinaciones mediante razonamiento de LLM."""
     if not state.documents: return {"grade": "no_útil", "hallucination_score": 1.0}
 
     context = "\n---\n".join(doc.page_content[:2000] for doc in state.documents)
@@ -207,4 +249,4 @@ def check_hallucination(state: RagState) -> dict:
 
 def no_answer(state: RagState) -> dict:
     """Fallback."""
-    return {"generation": "No se encontró información relevante.", "source_docs": []}
+    return {"generation": "No se encontró información relevante para sustentar una respuesta legal verificable.", "source_docs": []}

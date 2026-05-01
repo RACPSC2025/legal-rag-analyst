@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Annotated, List, Literal
 from pydantic import BaseModel, Field
 from langchain_core.documents import Document
+from src.schemas.legal_output import LegalAnswer, LegalCitation
 import operator
 
 
@@ -25,10 +26,14 @@ class RagState(BaseModel):
     question: str = Field(default="", description="Pregunta del usuario")
 
     documents: List[Document] = Field(
-        default_factory=list, description="Documentos recuperados de ChromaDB"
+        default_factory=list, description="Documentos recuperados"
     )
 
     generation: str = Field(default="", description="Respuesta generada por el LLM")
+    
+    legal_answer: Optional[LegalAnswer] = Field(
+        default=None, description="Objeto de respuesta estructurada v2.5"
+    )
 
     grade: Literal["útil", "no_útil", "alucinación", "pendiente"] = Field(
         default="pendiente", description="Veredicto del nodo grader"
@@ -46,15 +51,18 @@ class RagState(BaseModel):
     is_cached: bool = Field(
         default=False, description="Indica si la respuesta proviene de caché"
     )
+    
+    verification_passed: bool = Field(
+        default=False, description="Flag de éxito de la auditoría técnica"
+    )
+    
+    verification_feedback: str = Field(
+        default="", description="Instrucciones de corrección para el LLM"
+    )
 
     source_docs: List[str] = Field(
         default_factory=list,
-        description="Fragmentos textuales usados como evidencia para la respuesta",
-    )
-
-    verified_citations: List[dict] = Field(
-        default_factory=list,
-        description="Citas extraídas y verificadas contra el original"
+        description="Fragmentos textuales usados como evidencia",
     )
 
     class Config:

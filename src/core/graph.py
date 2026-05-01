@@ -32,11 +32,11 @@ from typing import Literal
 from langgraph.graph import END, START, StateGraph
 
 from src.core.nodes import (
-    check_hallucination,
     generate,
     grade_documents,
     no_answer,
     retrieve,
+    verify_citations_node,
 )
 from src.core.state import RagState
 
@@ -56,34 +56,37 @@ def route_after_grade(
     return "no_answer"
 
 
-def route_after_hallucination(
+def route_after_verification(
     state: RagState,
 ) -> Literal["__end__", "generate"]:
-    """Enruta después del verificador de alucinaciones."""
-    if state.grade == "útil":
-        logger.info("[ROUTER] Respuesta verificada → END.")
+    """
+    Enruta después del nodo de auditoría técnica (verify_citations_node).
+    Activa el bucle de auto-corrección si la verificación falla.
+    """
+    if state.verification_passed:
+        logger.info("[ROUTER] Auditoría técnica exitosa → END.")
         return END
 
     if state.attempts < MAX_ATTEMPTS:
         logger.warning(
-            f"[ROUTER] Alucinación detectada, reintento {state.attempts}/{MAX_ATTEMPTS} → generate."
+            f"[ROUTER] Fallo en verificación de citas, reintento {state.attempts}/{MAX_ATTEMPTS} → generate."
         )
         return "generate"
 
     logger.error(
-        "[ROUTER] Máximo de intentos alcanzado. Entregando respuesta con advertencia."
+        "[ROUTER] Máximo de intentos de auditoría alcanzado. Entregando con advertencia."
     )
     return END
 
 
 def build_graph() -> StateGraph:
-    """Construye y compila el StateGraph del RAG Legal."""
+    """Construye y compila el StateGraph del RAG Legal v2.5."""
     graph = StateGraph(RagState)
 
     graph.add_node("retrieve", retrieve)
     graph.add_node("grade_documents", grade_documents)
     graph.add_node("generate", generate)
-    graph.add_node("check_hallucination", check_hallucination)
+    graph.add_node("verify_citations", verify_citations_node)
     graph.add_node("no_answer", no_answer)
 
     graph.add_edge(START, "retrieve")
@@ -107,15 +110,16 @@ def build_graph() -> StateGraph:
         {"generate": "generate", "no_answer": "no_answer"},
     )
 
-    graph.add_edge("generate", "check_hallucination")
+    graph.add_edge("generate", "verify_citations")
 
     graph.add_conditional_edges(
-        "check_hallucination",
-        route_after_hallucination,
+        "verify_citations",
+        route_after_verification,
         {END: END, "generate": "generate"},
     )
 
     graph.add_edge("no_answer", END)
+
 
     return graph.compile()
 
