@@ -27,9 +27,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-# Añadir src al path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# ── Configuración de Path ────────────────────────────────────────────────────
+# Asegurar que la raíz del proyecto esté en sys.path para imports absolutos
+# __file__ está en api/main.py
+# parents[0] = api
+# parents[1] = raíz del proyecto
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
+# ── Imports de la API (usando imports relativos al proyecto) ──────────────────
 from api.routes import query, ingestion, health, cache
 from api.middleware.error_handler import add_error_handlers
 from api.middleware.logging_middleware import LoggingMiddleware

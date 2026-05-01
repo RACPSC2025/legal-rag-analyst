@@ -1,6 +1,7 @@
-# 🚀 API REST — RAG Legal Colombiano
+# 🚀 API REST — Fénix Legal v2.5
+## Generación Verificable
 
-API REST profesional para el sistema RAG Analista Legal. Proporciona endpoints para consultas, ingesta de documentos, gestión de caché y monitoreo de salud.
+API REST profesional para el sistema RAG Analista Legal con auditoría post-generación. Proporciona endpoints para consultas con verificación legal, ingesta de documentos, gestión de caché y monitoreo de salud.
 
 ---
 
@@ -20,15 +21,18 @@ API REST profesional para el sistema RAG Analista Legal. Proporciona endpoints p
 
 ## ✨ Características
 
+- **Generación Verificable**: Auditoría post-generación con verificación dual (citas + números)
+- **Auto-corrección**: Bucle de reflexión con máximo 2 reintentos
 - **RESTful API** con FastAPI y documentación OpenAPI automática
 - **Validación automática** con Pydantic v2
-- **Streaming de respuestas** con Server-Sent Events (SSE)
+- **Streaming Real** con eventos SSE (generation → verification → delivery)
 - **Sistema de caché** integrado (L1/L2/L3)
 - **Health checks** para Kubernetes (readiness/liveness)
 - **Error handling** global con formato estándar
 - **Logging estructurado** con request ID para trazabilidad
 - **CORS configurado** para frontend React/Vue
 - **Background tasks** para ingesta asíncrona
+- **Compliance Legal**: Auditoría para cumplimiento normativo colombiano
 
 ---
 
