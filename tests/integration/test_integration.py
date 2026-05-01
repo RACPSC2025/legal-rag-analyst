@@ -1,155 +1,125 @@
 """
 Script de prueba para validar la integración del Model Hub - Fase 0, Subtarea 0.3
-
-Este script prueba:
-1. Carga correcta de configuración desde .env
-2. Función get_dynamic_llm() con diferentes tareas
-3. Backward compatibility con get_llm()
-4. Invocación real de modelos (opcional)
+Utiliza 'Rich' para una salida de consola profesional y robusta.
 """
 
 import logging
 import sys
 import os
+import time
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.theme import Theme
 
-# Configurar logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Configuración de temas para Rich
+custom_theme = Theme({
+    "info": "cyan",
+    "warning": "yellow",
+    "error": "bold red",
+    "success": "bold green",
+    "highlight": "magenta",
+})
 
+console = Console(theme=custom_theme)
 logger = logging.getLogger(__name__)
 
-
 def test_integration():
-    """Prueba la integración del Model Hub con el sistema"""
+    """Prueba la integración del Model Hub con el sistema usando Rich"""
+    start_time = time.perf_counter()
+    
+    console.print(Panel.fit(
+        "[bold cyan]FÉNIX LEGAL v2.5[/bold cyan] - Auditoría de Integración [highlight]Subtarea 0.3[/highlight]",
+        border_style="cyan"
+    ))
+    
     try:
-        logger.info("=" * 60)
-        logger.info("🧪 INICIANDO PRUEBA DE INTEGRACIÓN - SUBTAREA 0.3")
-        logger.info("=" * 60)
-        
         # Test 1: Verificar configuración
-        logger.info("\n📝 Test 1: Verificar configuración desde .env")
+        console.print("\n[bold blue]🔍 Test 1: Verificando configuración (.env)...[/bold blue]")
         from src.config import settings
         
-        logger.info(f"   PREFERRED_PROVIDER: {settings.PREFERRED_PROVIDER}")
-        logger.info(f"   MODEL_SELECTION_MODE: {settings.MODEL_SELECTION_MODE}")
-        logger.info(f"   ENABLE_DYNAMIC_MODEL_SELECTION: {settings.ENABLE_DYNAMIC_MODEL_SELECTION}")
-        
-        assert settings.PREFERRED_PROVIDER is not None, "PREFERRED_PROVIDER debe estar configurado"
+        assert settings.PREFERRED_PROVIDER is not None, "PREFERRED_PROVIDER no configurado"
         assert settings.MODEL_SELECTION_MODE in ["performance", "cost_optimized"], "Modo inválido"
         
-        logger.info("✅ Test 1 PASADO: Configuración cargada correctamente")
+        table = Table(title="Configuración Detectada", show_header=True, header_style="bold magenta")
+        table.add_column("Parámetro", style="dim")
+        table.add_column("Valor", style="bold")
         
-        # Test 2: Función get_llm() (backward compatibility)
-        logger.info("\n📝 Test 2: Backward compatibility con get_llm()")
+        table.add_row("Provider", settings.PREFERRED_PROVIDER)
+        table.add_row("Mode", settings.MODEL_SELECTION_MODE)
+        table.add_row("Dynamic Selection", str(settings.ENABLE_DYNAMIC_MODEL_SELECTION))
+        
+        console.print(table)
+        console.print("[success]✅ Test 1: Configuración cargada correctamente.[/success]")
+
+        # Test 2: Compatibilidad Legacy
+        console.print("\n[bold blue]🔍 Test 2: Verificando compatibilidad legacy (get_llm)...[/bold blue]")
         from src.config import get_llm
-        
         llm_legacy = get_llm()
-        assert llm_legacy is not None, "get_llm() debe retornar un LLM"
-        
-        logger.info(f"   Modelo legacy: {llm_legacy.model_id}")
-        logger.info("✅ Test 2 PASADO: get_llm() funciona (backward compatible)")
-        
-        # Test 3: Función get_dynamic_llm() con diferentes tareas
-        logger.info("\n📝 Test 3: get_dynamic_llm() con diferentes tareas")
+        assert llm_legacy is not None
+        console.print(f"[info]   ➤ Modelo legacy:[/info] [highlight]{llm_legacy.model_id}[/highlight]")
+        console.print("[success]✅ Test 2: get_llm() operativo.[/success]")
+
+        # Test 3: Ruteo Dinámico
+        console.print("\n[bold blue]🔍 Test 3: Verificando ruteo dinámico por tareas...[/bold blue]")
         from src.config import get_dynamic_llm
-        
         tasks = ["grade", "verify", "summarize", "generate", "analyze"]
         llms = {}
         
+        task_table = Table(show_header=True, header_style="bold cyan")
+        task_table.add_column("Tarea", style="dim")
+        task_table.add_column("Modelo Asignado", style="bold yellow")
+        
         for task in tasks:
             llm = get_dynamic_llm(task=task)
-            assert llm is not None, f"get_dynamic_llm('{task}') debe retornar un LLM"
+            assert llm is not None
             llms[task] = llm
-            logger.info(f"   {task:12} → {llm.model_id}")
+            task_table.add_row(task, llm.model_id)
         
-        logger.info("✅ Test 3 PASADO: get_dynamic_llm() funciona para todas las tareas")
-        
-        # Test 4: Verificar que tareas light usan modelos diferentes a heavy
-        logger.info("\n📝 Test 4: Verificar diferenciación light vs heavy")
-        
-        light_model = llms["grade"].model_id
-        heavy_model = llms["generate"].model_id
-        
-        logger.info(f"   Modelo light (grade): {light_model}")
-        logger.info(f"   Modelo heavy (generate): {heavy_model}")
-        
-        # Pueden ser iguales si solo hay un modelo disponible del proveedor
-        # pero en general deberían ser diferentes
-        if light_model != heavy_model:
-            logger.info("   ✓ Modelos diferentes para light y heavy (óptimo)")
-        else:
-            logger.info("   ⚠️ Mismo modelo para light y heavy (puede ser normal si hay pocos modelos)")
-        
-        logger.info("✅ Test 4 PASADO: Diferenciación verificada")
-        
-        # Test 5: Desactivar selección dinámica
-        logger.info("\n📝 Test 5: Desactivar selección dinámica")
-        
-        # Guardar valor original
-        original_value = settings.ENABLE_DYNAMIC_MODEL_SELECTION
-        
-        # Desactivar temporalmente
-        settings.ENABLE_DYNAMIC_MODEL_SELECTION = False
-        
-        llm_static = get_dynamic_llm(task="generate")
-        logger.info(f"   Modelo con selección desactivada: {llm_static.model_id}")
-        logger.info(f"   Modelo legacy: {llm_legacy.model_id}")
-        
-        # Restaurar valor original
-        settings.ENABLE_DYNAMIC_MODEL_SELECTION = original_value
-        
-        logger.info("✅ Test 5 PASADO: Modo estático funciona")
-        
-        # Test 6: Invocación real (opcional, comentado por defecto)
-        logger.info("\n📝 Test 6: Invocación real de modelo (OPCIONAL)")
-        logger.info("   ⏭️ Saltando invocación real para ahorrar costos")
-        logger.info("   💡 Para probar invocación real, descomenta el código en el script")
-        
-        # Descomentar para probar invocación real:
-        # try:
-        #     llm = get_dynamic_llm(task="grade")
-        #     response = llm.invoke("Di 'Hola' en una palabra")
-        #     logger.info(f"   Respuesta del modelo: {response.content}")
-        #     logger.info("✅ Test 6 PASADO: Invocación real exitosa")
-        # except Exception as e:
-        #     logger.warning(f"⚠️ Test 6 FALLIDO: {e}")
-        
-        # Resumen final
-        logger.info("\n" + "=" * 60)
-        logger.info("✅ TODOS LOS TESTS DE INTEGRACIÓN PASARON")
-        logger.info("=" * 60)
-        
-        logger.info("\n📊 RESUMEN DE INTEGRACIÓN:")
-        logger.info("   ✓ Configuración cargada desde .env")
-        logger.info("   ✓ get_llm() funciona (backward compatible)")
-        logger.info("   ✓ get_dynamic_llm() funciona para todas las tareas")
-        logger.info("   ✓ Diferenciación light vs heavy")
-        logger.info("   ✓ Modo estático funciona cuando está desactivado")
-        
-        logger.info("\n🎯 FASE 0 COMPLETADA:")
-        logger.info("   ✅ Subtarea 0.1: Bedrock Registry")
-        logger.info("   ✅ Subtarea 0.2: Model Selector")
-        logger.info("   ✅ Subtarea 0.3: Integración con sistema")
-        
-        logger.info("\n💡 PRÓXIMOS PASOS:")
-        logger.info("   1. Actualizar nodes.py para usar get_dynamic_llm()")
-        logger.info("   2. Probar el grafo completo con selección dinámica")
-        logger.info("   3. Medir reducción de costos y mejora de performance")
-        
-        return True
-        
-    except ImportError as e:
-        logger.error(f"❌ Error de importación: {e}")
-        logger.error("💡 Asegúrate de que todos los módulos estén correctamente instalados")
-        return False
-    except Exception as e:
-        logger.error(f"❌ Error durante las pruebas: {e}")
-        logger.exception("Detalles del error:")
-        return False
+        console.print(task_table)
+        console.print("[success]✅ Test 3: Ruteo dinámico operativo.[/success]")
 
+        # Test 4: Light vs Heavy
+        console.print("\n[bold blue]🔍 Test 4: Diferenciación Light vs Heavy...[/bold blue]")
+        light_id = llms["grade"].model_id
+        heavy_id = llms["generate"].model_id
+        
+        if light_id != heavy_id:
+            console.print(f"[success]   ➤ Optimización activa:[/success] Light ([dim]{light_id}[/dim]) != Heavy ([bold]{heavy_id}[/bold])")
+        else:
+            console.print("[warning]   ➤ Mismo modelo para ambos perfiles (Fallback detectado).[/warning]")
+        console.print("[success]✅ Test 4: Perfiles de costo verificados.[/success]")
+
+        # Test 5: Kill-switch
+        console.print("\n[bold blue]🔍 Test 5: Kill-switch de selección dinámica...[/bold blue]")
+        original = settings.ENABLE_DYNAMIC_MODEL_SELECTION
+        settings.ENABLE_DYNAMIC_MODEL_SELECTION = False
+        try:
+            llm_static = get_dynamic_llm(task="generate")
+            assert llm_static.model_id == llm_legacy.model_id
+            console.print(f"[info]   ➤ Modo estático forzado:[/info] {llm_static.model_id}")
+        finally:
+            settings.ENABLE_DYNAMIC_MODEL_SELECTION = original
+        console.print("[success]✅ Test 5: Modo estático funciona correctamente.[/success]")
+
+        # Resumen Final
+        duration = time.perf_counter() - start_time
+        console.print("\n" + "═" * 60)
+        console.print(Panel(
+            f"[bold success]INTEGRACIÓN EXITOSA[/bold success]\n[dim]Tiempo total: {duration:.2f}s[/dim]",
+            title="Resultado Final",
+            border_style="green"
+        ))
+        
+    except Exception as e:
+        console.print(f"\n[error]❌ ERROR EN INTEGRACIÓN:[/error] {str(e)}")
+        import traceback
+        console.print(traceback.format_exc(), style="dim red")
+        raise e
 
 if __name__ == "__main__":
-    success = test_integration()
-    sys.exit(0 if success else 1)
+    try:
+        test_integration()
+        sys.exit(0)
+    except Exception:
+        sys.exit(1)

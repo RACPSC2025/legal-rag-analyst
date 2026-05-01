@@ -1,7 +1,12 @@
 # tests/unit/test_numeric_grader.py
 
 import pytest
+import sys
+from rich.console import Console
+from rich.table import Table
 from src.services.numeric_grader import NumericGrader
+
+console = Console()
 
 class TestNumericGrader:
     
@@ -57,17 +62,29 @@ class TestNumericGrader:
         context = [
             {"page_content": "La multa será de $ 5.000.000 COP y el plazo de 15 días."}
         ]
-        # LLM inventa $6.000.000 y 20 días
         answer = "Debe pagar una multa de $ 6.000.000 en un plazo de 20 días."
         
         discrepancies = grader.audit_numbers(answer, context)
         
+        # Visualización con Rich para depuración manual
+        if sys.stdout.isatty():
+            table = Table(title="Discrepancias Numéricas Detectadas", header_style="bold red")
+            table.add_column("Dato", style="cyan")
+            table.add_column("Esperado", style="green")
+            table.add_column("Encontrado", style="bold yellow")
+            table.add_column("Severidad", style="magenta")
+            
+            for d in discrepancies:
+                table.add_row(d.data_type, str(d.expected_value), str(d.found_value), d.severity)
+            
+            console.print("\n")
+            console.print(table)
+
         assert len(discrepancies) == 2
         types = [d.data_type for d in discrepancies]
         assert "currency" in types
         assert "days" in types
         
-        # Verificar valores esperados vs encontrados
         for d in discrepancies:
             if d.data_type == "currency":
                 assert d.expected_value == 5000000.0
@@ -75,3 +92,7 @@ class TestNumericGrader:
             if d.data_type == "days":
                 assert d.expected_value == 15.0
                 assert d.found_value == 20.0
+
+if __name__ == "__main__":
+    console.print("[bold green]Iniciando Pruebas Unitarias: NumericGrader[/bold green]")
+    pytest.main([__file__, "-v", "-s"])
