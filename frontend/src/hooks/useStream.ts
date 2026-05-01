@@ -4,7 +4,7 @@ import type {
   StreamPhase,
   TokenEvent,
   VerificationCompleteEvent,
-} from './src/types';
+} from '../types';
 
 interface PhaseChangeEvent {
   phase: StreamPhase;

@@ -74,3 +74,16 @@ export interface VerificationCompleteEvent {
   failed: number;
   verification_passed: boolean;
 }
+
+export interface IngestionResponse {
+  job_id: string;
+  status: 'queued' | 'processing' | 'completed' | 'failed';
+  processed_files: string[];
+  failed_files: string[];
+  total_chunks: number;
+  indexed_chunks: number;
+  errors: string[];
+  started_at?: string;
+  completed_at?: string;
+  duration_seconds?: number;
+}
