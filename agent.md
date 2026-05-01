@@ -361,5 +361,35 @@ Estas reglas rigen todo el ciclo de vida del desarrollo de este proyecto y deben
 
 ---
 
-**Versión**: 2.5 — Abril 2026  
+## 🛠️ Reglas de Oro y Estándar de Ingeniería (Mandatorio)
+
+Para garantizar la escalabilidad y el orden absoluto, el agente debe seguir este flujo de trabajo sin excepciones:
+
+### 1. Metodología "Specs-First"
+Cualquier hito o modificación compleja (Sprints) debe ser planificada en el directorio raíz `specs/` antes de tocar una sola línea de código fuente.
+- **Estructura por Sprint**: `specs/sprint-[nombre]/`
+- **Archivos Obligatorios**:
+    *   `design.md`: Arquitectura técnica y diagramas de flujo.
+    *   `requirements.md`: KPIs, NFRs y criterios de aceptación.
+    *   `tasks.md`: Lista de tareas con checkboxes y referencias a código.
+    *   `PLAN.md`: Contrato de ejecución, cronograma y gestión de riesgos.
+    *   `README.md`: Bitácora técnica del sprint (Memoria del Equipo).
+
+### 2. Documentación Diaria (Audit Trail)
+Toda actividad debe ser registrada al final de la jornada en la carpeta `doc/` en un archivo con formato `DDMMYYYY.md`.
+- **Regla de Oro**: **APPEND ONLY**. Nunca borrar ni modificar contenido previo. Solo anexar nuevos descubrimientos, cambios realizados, ventajas y beneficios.
+
+### 3. Arquitectura Frontend (Feature-Based)
+El frontend debe seguir una estructura basada en características para evitar la saturación de componentes:
+- `src/features/[domain]`: Lógica, componentes y hooks específicos por dominio (Chat, Viewer, Ingestión).
+- `src/api`: Servicios centralizados.
+- `src/store`: Estado global.
+
+### 4. Gestión de Dependencias
+- **Python**: Siempre usar el entorno virtual `.venv` (`.venv\Scripts\python.exe`).
+- **Node/Frontend**: Uso obligatorio de `pnpm` para velocidad y seguridad de integridad.
+
+---
+
+**Versión**: 2.5 — Mayo 2026  
 **Actualizado por**: Fenix Tech Líder
