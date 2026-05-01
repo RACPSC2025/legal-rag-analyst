@@ -17,7 +17,9 @@ import time
 import uuid
 from typing import Dict, Any
 
-from fastapi import APIRouter, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks, File, UploadFile
+import os
+from pathlib import Path
 
 from api.schemas.request_models import IngestionRequest, IngestionStatusRequest
 from api.schemas.response_models import IngestionResponse, ErrorResponse
@@ -81,6 +83,34 @@ def _run_ingestion_background(job_id: str, request: IngestionRequest):
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
+
+@router.post(
+    "/upload",
+    status_code=status.HTTP_201_CREATED,
+    summary="Subir Archivos para Ingesta",
+    description="Sube archivos PDF o Markdown al servidor para su posterior procesamiento.",
+)
+async def upload_files(
+    files: List[UploadFile] = File(...),
+) -> Dict[str, Any]:
+    """
+    Endpoint para subir archivos físicamente al servidor.
+    """
+    upload_dir = Path("data/uploads")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    saved_paths = []
+    for file in files:
+        file_path = upload_dir / file.filename
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+        saved_paths.append(str(file_path))
+    
+    return {
+        "message": f"Se subieron {len(saved_paths)} archivos correctamente",
+        "file_paths": saved_paths
+    }
+
 
 @router.post(
     "/",
