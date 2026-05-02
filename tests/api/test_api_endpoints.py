@@ -33,9 +33,10 @@ def api_client() -> Generator[httpx.Client, None, None]:
     Cliente HTTP para tests de API.
     
     Scope: module - Se crea una vez por módulo de tests.
+    follow_redirects=True para manejar 307 de FastAPI (trailing slash).
     """
     logger.info(f"Creando cliente HTTP para {API_BASE_URL}")
-    with httpx.Client(base_url=API_BASE_URL, timeout=TIMEOUT) as client:
+    with httpx.Client(base_url=API_BASE_URL, timeout=TIMEOUT, follow_redirects=True) as client:
         yield client
     logger.info("Cliente HTTP cerrado")
 
