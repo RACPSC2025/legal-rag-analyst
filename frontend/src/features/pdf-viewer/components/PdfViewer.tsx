@@ -4,11 +4,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
-// ─── PDF Worker ────────────────────────────────────────────────────────────
-if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-}
-
 interface PdfViewerProps {
   file: File | string;
   pageNumber: number;
